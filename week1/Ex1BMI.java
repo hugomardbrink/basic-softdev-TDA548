@@ -4,7 +4,6 @@ import java.util.Scanner;
 import static java.lang.System.in;
 import static java.lang.System.out;
 
-
 /*
  *
  * Program to calculate a persons BMI
@@ -20,7 +19,6 @@ import static java.lang.System.out;
  */
 public class Ex1BMI {
 
-    // Don't care about this, must be there, start coding at program
     public static void main(String[] args) {
         new Ex1BMI().program();
     }
@@ -29,20 +27,20 @@ public class Ex1BMI {
     final Scanner sc = new Scanner(in);
 
     void program() {
-        double  weight,
-                height,
+        double  weight,  //declares variables with type: double for decimals
+                height,  //double is also used for java math support
                 bmi;
 
         // --- Input ---------
         out.println("Input your weight in kg > ");
-        weight = sc.nextDouble();
+        weight = sc.nextDouble(); //input for variable with double type
         out.println("Input your height in m > ");
         height = sc.nextDouble();
 
         // --- Process --------
-        bmi = weight / Math.pow(height, 2);
+        bmi = weight / Math.pow(height, 2); //divides weight with height^2
 
         // --- Output ---------
-        out.println("Your BMI: " + bmi);
+        out.println("Your BMI: " + bmi); //prints result
     }
 }
