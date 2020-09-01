@@ -30,15 +30,13 @@ public class Ex6ClassObjects {
             heroCount++;
             obj[i] = new Hero(heroCount);
         }
-        if (obj[0].strength > obj[1].strength) {
+        if (obj[0].strength > obj[1].strength)
             out.println(obj[0].name + " is stronger.");
-        }
-        else if (obj[0].strength < obj[1].strength) {
+        else if (obj[0].strength < obj[1].strength)
             out.println(obj[1].name + " is stronger.");
-        }
-        else{
+        else
             out.println(obj[0].name + " and " + obj[1].name + " are equally strong.");
-        }
+
     }
 
     // ------ The class to use  -----------

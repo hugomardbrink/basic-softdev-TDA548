@@ -51,38 +51,44 @@ public class Ex7RPS {
             computer = (rand.nextInt(3) + 1);
             out.println("Computer choose: " + computer);
 
-            if (human == computer){       }
+            if (human == computer){}
             else if(human == 1) {
-                if (computer == 2) {result--;}
-                else {result++;}
+                if (computer == 2)
+                    result--;
+                else
+                    result++;
             }
             else if(human == 2) {
-                if (computer == 1) {result++;}
-                else {result--;}
+                if (computer == 1)
+                    result++;
+                else
+                    result--;
             }
             else {
-                if (computer == 1) {result--;}
-                else {result++;}
+                if (computer == 1)
+                    result--;
+                else
+                    result++;
             }
 
-            if (result == 0) {
+            if (result == 0)
                 out.println("Draw");
-            } else if (result > 0) {
+            else if (result > 0)
                 out.println("Human won.");
-            } else {
+            else
                 out.println("Computer won.");
-            }
+
             total += result;
             result = 0;
             out.println("Score: " + total);
         }
+
         out.println("Game over! ");
-        if (total == 0) {
+        if (total == 0)
             out.println("Draw");
-        } else if (total > 0) {
+        else if (total > 0)
             out.println("Human won.");
-        } else {
+        else
             out.println("Computer won.");
-        }
     }
 }

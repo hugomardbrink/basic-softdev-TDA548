@@ -1,7 +1,6 @@
 package exercises;
 
 import java.util.Scanner;
-
 import static java.lang.System.*;
 
 /*
@@ -24,9 +23,7 @@ public class Ex8DayNumber {
     final Scanner sc = new Scanner(in);
 
     void program() {
-        //test();                // <--------- Uncomment to test only
 
-        // -- In ----------------
         out.print("Input the year > ");
         int year = sc.nextInt();
         out.print("Input the month number > ");
@@ -34,54 +31,39 @@ public class Ex8DayNumber {
         out.print("Input the day number > ");
         int day = sc.nextInt();
 
-        // --- Process ---------
 
-        // Write the code to call top level method here
-        // Then break the method down in smaller methods, call them etc.
         int dayNbr = calcDays(month, checkLeapyear(year), day);
-
-        // ---- Out ----
         printResult(year, month, day, dayNbr, checkLeapyear(year));
-
-
     }
-
 
     void printResult(int year, int month, int day, int dayNbr, boolean leapyear) {
         out.println("Ordinal number for " + day + "/" + month + " in " + year + " is: " + dayNbr);
-        if(leapyear) {
+        if(leapyear)
             out.println(year + " is a leapyear.");
-        }
-        else{
+        else
             out.println(year + " is not a leapyear");
-        }
-
     }
 
     boolean checkLeapyear(int year){
-        if (year % 4 != 0) {
+        if (year % 4 != 0)
             return false;
-        } else if (year % 400 == 0) {
+        else if (year % 400 == 0)
             return true;
-        } else if (year % 100 == 0) {
+        else if (year % 100 == 0)
             return false;
-        } else {
+        else
             return true;
         }
-    }
-
 
     int calcDays(int month, boolean leapyear, int days) {
         int[] monthDays = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
         int daySum = 0;
 
         for (int i = 0; i < (month - 1); i++) {
-            if (leapyear && i == 1) {
+            if (leapyear && i == 1)
                 daySum += 29;
-            }
-            else {
+            else
                 daySum += monthDays[i];
-            }
         }
         return daySum + days;
     }

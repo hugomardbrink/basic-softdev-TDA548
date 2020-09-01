@@ -25,24 +25,19 @@ public class Ex3SumAvg {
         ArrayList<Integer> numbers = new ArrayList<Integer>();
         int sum = 0;
         float average;
-        boolean running = true;
-
 
         out.println("Type non-negative integers");
 
-        while (running) {
+        while (true) {
             int input = sc.nextInt();
             if (input >= 0) {
                 numbers.add(input);
                 sum += input;
-            }
-            else{
-                running = false;
-            }
+            } else
+                break;
         }
-
         out.println(numbers);
-        average = sum/numbers.size();
+        average = sum / numbers.size();
         out.println("sum: " + sum + ", average: " + average);
     }
 }

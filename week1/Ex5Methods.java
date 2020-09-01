@@ -46,9 +46,9 @@ public class Ex5Methods {
 
     int factorial(int number){
         int factorialSum = 1;
-        for (int i = 1; i <= number; i++){
+        for (int i = 1; i <= number; i++)
             factorialSum *= i;
-        }
+
         return factorialSum;
     }
 
@@ -66,9 +66,9 @@ public class Ex5Methods {
 
     int next(int[] array, int index) {
         int nextNum;
-        if (index == (array.length - 1)){
+        if (index == (array.length - 1))
             nextNum = array[0];
-        }
+
         else {
             nextNum = array[index + 1];
         }

@@ -24,23 +24,22 @@ public class Ex4Arrays {
         int[] numarray = {0, 0, 0, 0, 0};
         int answer;
 
-        for (int i = 0; i < numarray.length; i++){
+        for (int i = 0; i < numarray.length; i++)
             numarray[i] = sc.nextInt();
-        }
+
 
         out.println("Array is: ");
-        for (int i = 0; i < numarray.length; i++){
+        for (int i = 0; i < numarray.length; i++)
             out.print(numarray[i] + ", ");
-        }
+
         out.println("\nSelect searched value: ");
         answer = sc.nextInt();
 
-        for (int k = 0; k < numarray.length; k++){
+        for (int k = 0; k < numarray.length; k++)
             if (answer == numarray[k]){
                 out.println("Your value is at index: " + k);
                 return;
             }
-        }
         out.println("Value not found.");
     }
 }

@@ -52,11 +52,10 @@ public class Ex9TicTacToe {
         out.println("Game over!");
         plotBoard(board);
 
-        if (winner != null) {
+        if (winner != null)
             out.println("Winner is " + current.name);
-        } else {
+         else
             out.println("Draw");
-        }
     }
 
 
@@ -92,9 +91,9 @@ public class Ex9TicTacToe {
 
     char[] createBoard() {
         char[] board = new char[9];
-        for (int i = 0; i < board.length; i++) {
+        for (int i = 0; i < board.length; i++)
             board[i] = EMPTY;
-        }
+
         return board;
     }
 
@@ -104,9 +103,9 @@ public class Ex9TicTacToe {
             out.println("Player is " + player.name + "(" + player.mark + ")");
             out.print("Select position to put mark (0-8) > ");
             selection = sc.nextInt();
-            if (0 <= selection && selection <= 8) {
+            if (0 <= selection && selection <= 8)
                 break;
-            }
+
             out.println("Bad choice (0-8 allowed)");
         }
         return selection;
@@ -115,9 +114,8 @@ public class Ex9TicTacToe {
     void plotBoard(char[] board) {
         for (int i = 0; i < board.length; i++) {
             out.print(board[i] + " ");
-            if ((i + 1) % 3 == 0) {
+            if ((i + 1) % 3 == 0)
                 out.println();
-            }
         }
     }
 

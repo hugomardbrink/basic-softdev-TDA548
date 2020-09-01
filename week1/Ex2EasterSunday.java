@@ -45,21 +45,19 @@ public class Ex2EasterSunday {
         e = t % 7;
         date = 22 + d + e;
 
-        if (date < 32){
+        if (date < 32)
             month = 3;
-        }
-        else{
+
+        else {
             date = d + e - 9;
             month = 4;
-            if(date == 26){
+            if(date == 26)
                 date = 19;
-            } else if(date == 25 && a == 16 && d == 28){
+            else if(date == 25 && a == 16 && d == 28)
                 date = 18;
-            }
         }
 
 
-        // --------- Output -----------
         out.println("Easter Sunday for " + year + " is :  ");
         out.println("month: " + month + ", date: " + date);
 
