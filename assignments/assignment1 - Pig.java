@@ -32,7 +32,7 @@ public class Pig { // Declare program class
 
         welcomeMsg(winPts); // Prompts welcome message
         statusMsg(players); // Prompts player scores
-        current = players[random(2)]; // Randomizes starting player
+        current = players[random(3)]; // Randomizes starting player 1-3
 
         while(true){ // Gameplay loop
             if (current != players[2]) { // If player is human
@@ -151,7 +151,7 @@ public class Pig { // Declare program class
             int choice; // Declare variable for storing computer choice
             out.println("Player is Computer"); // Announces computers turn
 
-            if (roundRolls >= 0){ // If computers first turn then force roll for balancing
+            if (roundRolls <= 0){ // If computers first turn then force roll for balancing
                 roundRolls++; // Add 1 turn to variable
                 out.println("Computer chose: 'r'"); // Announce computers choice
                 return 'r'; // Return dice roll option
