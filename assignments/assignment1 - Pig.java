@@ -5,7 +5,6 @@ import static java.lang.System.*;
 /*
  * The Pig game
  * See http://en.wikipedia.org/wiki/Pig_%28dice_game%29
- * Made by: Hugo Mårdbrink, Linus Ljungström
  */
 
 public class Pig { // Declare program class
