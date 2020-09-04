@@ -1,10 +1,7 @@
 package exercises;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 
-import static java.lang.StrictMath.round;
-import static java.lang.StrictMath.sqrt;
 import static java.lang.System.out;
 
 /*
@@ -30,7 +27,7 @@ public class Ex3MatrixMethods {
         // TODO uncomment one at a time and implement
 
         // Return array with all negatives in m
-        Integer[] negs = getNegatives(m);
+        int[] negs = getNegatives(m);
         out.println(negs.length == 6);
         out.println(Arrays.toString(negs).equals("[-1, -5, -2, -2, -6, -6]")); // Possibly other ordering!
 
@@ -58,7 +55,6 @@ public class Ex3MatrixMethods {
           {4, 5, 6},
           {7, 8, 9} }
         */
-        //plot(matrix);  // If manual inspection
         out.println(Arrays.toString(matrix[0]).equals("[1, 2, 3]"));
         out.println(Arrays.toString(matrix[1]).equals("[4, 5, 6]"));
         out.println(Arrays.toString(matrix[2]).equals("[7, 8, 9]"));
@@ -66,32 +62,35 @@ public class Ex3MatrixMethods {
         // Sum of all directly surrounding elements to some element in matrix
         // (not counting the element itself)
         // NOTE: Should be possible to expand method to include more distant neighbours
-        //out.println(sumNeighbours(matrix, 0, 0) == 11);
-        //out.println(sumNeighbours(matrix, 1, 1) == 40);
-        //out.println(sumNeighbours(matrix, 1, 0) == 23);
+        out.println(sumNeighbours(matrix, 0, 0) == 11);
+        out.println(sumNeighbours(matrix, 1, 1) == 40);
+        out.println(sumNeighbours(matrix, 1, 0) == 23);
     }
 
     // -------- Write methods below this -----------------------
 
-    Integer [] getNegatives(int[][] matrix){
-        ArrayList<Integer> matches = new ArrayList<>();
+    int[] getNegatives(int[][] matrix) {
+        int arrayIndex = 0;
+        int[] matches = new int[matrix.length + matrix[0].length];
 
-        for(int i = 0; i < matrix.length; i++){
-            for(int k = 0; k < matrix[0].length; k++){
-                if (matrix[i][k] < 0){
-                    matches.add(matrix[i][k]);
+        for (int i = 0; i < matrix.length; i++) {
+            for (int k = 0; k < matrix[0].length; k++) {
+                if (matrix[i][k] < 0) {
+                    matches[arrayIndex] = matrix[i][k];
+                    arrayIndex++;
                 }
             }
         }
-        Integer[] array = matches.toArray(new Integer[0]);
-        return array;
+        int[] matchScaled = new int[arrayIndex];
+        for (int i = 0; i < arrayIndex; i++) {
+            matchScaled[i] = matches[i];
+        }
+        return matchScaled;
     }
 
-    int [][] markNegatives(int[][] matrix){
-
-
-        for(int i = 0; i < matrix.length; i++){
-            for(int k = 0; k < matrix[0].length; k++) {
+    int[][] markNegatives(int[][] matrix) {
+        for (int i = 0; i < matrix.length; i++) {
+            for (int k = 0; k < matrix[0].length; k++) {
                 if (matrix[i][k] < 0) {
                     matrix[i][k] = 1;
                 } else {
@@ -102,29 +101,47 @@ public class Ex3MatrixMethods {
         return matrix;
     }
 
-    int[][] toMatrix(int [] arr){
+    int[][] toMatrix(int[] arr) {
         int arrIndex = 0;
 
         int[][] matrix = new int[(int) (Math.sqrt(arr.length))][(int) (Math.sqrt(arr.length))];
-                for (int i = 0; i < matrix.length; i++){
-                    for (int k = 0; k < matrix[0].length; k++){
-                        matrix[i][k] = arr[arrIndex];
-                        arrIndex++;
-                    }
-                }
+        for (int i = 0; i < matrix.length; i++) {
+            for (int k = 0; k < matrix[0].length; k++) {
+                matrix[i][k] = arr[arrIndex];
+                arrIndex++;
+            }
+        }
         return matrix;
     }
 
+    int sumNeighbours(int[][] matrix, int row, int col) {
+        int sum = 0,
+            rowStart = row - 2,
+            colStart = col - 2,
+            rowStop = row + 2,
+            colStop = col + 2;
 
-
-    // Use if you like (during development)
-    void plot(int[][] matrix) {
-        for (int row = 0; row < matrix.length; row++) {
-            out.println(Arrays.toString(matrix[row]));
+        if (rowStart < 0){
+            rowStart = 0;
+        } if (rowStop > matrix.length){
+            rowStop = matrix.length;
+        } if (colStart < 0){
+            colStart = 0;
+        } if (colStop > matrix[0].length){
+            colStop = matrix[0].length;
         }
+
+        for (int r = rowStart; r < rowStop; r++) {
+            for (int c = colStart; c < colStop; c++) {
+                if (matrix[r][c] != matrix[row][col]) {
+                    sum += matrix[r][c];
+                }
+            }
+        }
+        return sum;
     }
-
-
-
-
 }
+
+
+
+
