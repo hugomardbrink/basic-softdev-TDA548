@@ -4,4 +4,4 @@ My solutions to different tasks within this university course
 All solutions are written by me with different templates provided by the course.
 
 
-Fellow student should NOT; copy graded code
+Fellow students should NOT; copy graded code
