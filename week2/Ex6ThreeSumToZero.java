@@ -51,7 +51,7 @@ public class Ex6ThreeSumToZero {
             for (int j = i + 1; j < n - 1; j++)
                 for (int k = j + 1; k < n; k++) {
                     if ((arr[i] + arr[j] + arr[k]) == 0) {
-                        int[] newArr = {arr[i], arr[k], arr[j]};
+                        int[] newArr = {i, j, k};
                         return newArr;
                     }
                 }
