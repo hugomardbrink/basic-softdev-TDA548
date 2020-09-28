@@ -24,170 +24,171 @@ import static java.lang.System.*;
 // Extends Application because of JavaFX (just accept for now)
 
 public class Neighbours extends Application {
-    enum Actor {BLUE, RED, NONE}
+    enum Actor {BLUE, RED, NONE}                                           //Declares necessary enums
     enum State {SATISFIED, UNSATISFIED, NA}
 
-    World world;
+    World world;                                                           //Declared world class
 
     @Override
     public void init() {
-        double[] dist = {0.25, 0.25, 0.50};
-        int nLocations = 900;
+        double[] dist = {0.25, 0.25, 0.50};                                //0 is red, 1 is blue, 2 is empty
+        int nLocations = 900;                                              //matrix size
 
-        world = new World(dist, nLocations);
-
-        fixScreenSize(nLocations);
+        world = new World(dist, nLocations);                               //creates the world
+        fixScreenSize(nLocations);                                         //sets screen-size
     }
 
-    void updateWorld() {
-        double threshold = 0.4;
+    void updateWorld() {                                                   //updates world
+        double threshold = 0.7;                                            //agent satisfactory threshold
         world.deployStates(threshold);
-
     }
 
     //---------------- Methods ----------------------------
 
-    int getFraction(double dist, int size) {
+    int getFraction(double dist, int size) {                               //function that makes double into a percentage of totalsize
         return ((int) (dist * size));
     }
 
-    double getAdjacentRelation(int states, int totalStates){
+    double getAdjacentRelation(int states, int totalStates){               //gets relation between adjacent agents
         return ((double) states / (double) totalStates);
     }
 
-    int getAgentSum (int[] array) {
+    int getAgentSum (int[] array) {                                        //sums amount of reds and blues in the adjacency
         return array[0] + array[1];
     }
 
-    boolean isSatisfied(double roof, int[] found, Actor state) {
-        double sameAdjacent;
-        int stateSum = getAgentSum(found);
+    boolean isSatisfied(double roof, int[] found, Actor state) {           //method for checking if agent is satisfied
+        double sameAdjacent;                                               //variable for amount of same agent adjacent
+        int stateSum = getAgentSum(found);                                 //sum of agents in the adjacency
 
-
-        sameAdjacent = switch (state) {
+        sameAdjacent = switch (state) {                                    //checks adjacency depending on own agent type
             case RED -> getAdjacentRelation(found[0], stateSum);
             case BLUE -> getAdjacentRelation(found[1], stateSum);
             default -> 0.0;
         };
 
-        return sameAdjacent >= roof;
+        return sameAdjacent >= roof;                                       //returns true false depending on relation with threshold
     }
 
-    void reallocate(Actor[][] matrix, int row, int col){
-        Random rand = new Random();
-        while (true) {
-            int randRow = rand.nextInt(matrix.length),
-                randCol = rand.nextInt(matrix[0].length);
+    void reallocate(Actor[][] matrix, int row, int col){                   //reallocates a agent to a random empty space
+        Random rand = new Random();                                        //init random
+        while (true) {                                                     //loops until valid space found
+            int randRow = rand.nextInt(matrix.length),                     //randomizes a row
+                randCol = rand.nextInt(matrix[0].length);                  //randomizes a col
 
-            if ((randRow != row) && (randCol != col) && (matrix[randRow][randCol] == Actor.NONE)) {
-                matrix[randRow][randCol] = matrix[row][col];
-                matrix[row][col] = Actor.NONE;
-                return;
+            if ((randRow != row) &&                                        //if current row or col is not the same
+                (randCol != col) &&                                        //and current space is empty
+                (matrix[randRow][randCol] == Actor.NONE)) {
+
+                matrix[randRow][randCol] = matrix[row][col];               //assigns agent to empty space
+                matrix[row][col] = Actor.NONE;                             //clears prior space
+                return;                                                    //breaks loop
             }
         }
     }
 
-    class World {
-        Actor[][] agentMap;
+    class World {                                                          //class for storing both maps
+        Actor[][] agentMap;                                                //created for abstract methods
         State[][] stateMap;
 
-        World (double[] dist, int size) {
-            int red = getFraction(dist[0], size),
-                blue = getFraction(dist[1], size),
-                vectorSize = (int) sqrt(size);
+        World (double[] dist, int size) {                                  //constructor; creates world
+            int red = getFraction(dist[0], size),                          //gets amounts of reds
+                blue = getFraction(dist[1], size),                         //gets amounts of blues
+                vectorSize = (int) sqrt(size);                             //gets row and col length
 
-            agentMap = new Actor[vectorSize][vectorSize];
-            stateMap = new State[vectorSize][vectorSize];
+            agentMap = new Actor[vectorSize][vectorSize];                  //creates agentMap
+            stateMap = new State[vectorSize][vectorSize];                  //creates stateMap
 
-            declareDist(red, blue);
-            shuffle();
+            declareDist(red, blue);                                        //makes matrix with right amounts of red&blue
+            shuffle();                                                     //shuffles the matrix
         }
 
-        void declareDist(int red, int blue) {
-            for (int r = 0; r < agentMap.length; r++)
+        void declareDist(int red, int blue) {                              //create matrix with right num of red&blue
+            for (int r = 0; r < agentMap.length; r++)                      //loop through agentMap
                 for (int c = 0; c < agentMap[0].length; c++) {
-                    if (red > 0) {
+                    if (red > 0) {                                         //fills with red until amount is empty
                         agentMap[r][c] = Actor.RED;
                         red--;
-                    } else if (blue > 0) {
+                    } else if (blue > 0) {                                 //fills with blue until amount is empty
                         agentMap[r][c] = Actor.BLUE;
                         blue--;
-                    } else {
+                    } else {                                               //sets rest to empty spaces
                         agentMap[r][c] = Actor.NONE;
                     }
                 }
         }
 
-        void shuffle() {
-            Random rand = new Random();
-            Actor temp;
-            int randRow,
+        void shuffle() {                                                  //shuffles matrix to random spaces.
+            Random rand = new Random();                                   //init rand
+            Actor temp;                                                   //temp actor for exchange
+            int randRow,                                                  //declares var for random row and col
                 randCol;
 
 
             for (int r = 0; r < agentMap.length; r++)
-                for (int c = 0; c < agentMap[0].length; c++) {
-                    randRow = rand.nextInt(agentMap.length);
+                for (int c = 0; c < agentMap[0].length; c++) {            //loops through agentMap
+                    randRow = rand.nextInt(agentMap.length);              //randomizes row and col
                     randCol = rand.nextInt(agentMap[0].length);
 
-                    temp = agentMap[r][c];
+                    temp = agentMap[r][c];                                //switch places with place is for and random
                     agentMap[r][c] = agentMap[randCol][randRow];
                     agentMap[randCol][randRow] = temp;
                 }
         }
 
-        void assignState(boolean satisfied, int r, int c) {
-            if (agentMap[r][c] != Actor.NONE) {
+        void assignState(boolean satisfied, int r, int c) {              //assigns correct state depending on parameter
+            if (agentMap[r][c] != Actor.NONE) {                          //if agent exists assign based on boolean
                 if (satisfied) {
                     stateMap[r][c] = State.SATISFIED;
                 } else {
                     stateMap[r][c] = State.UNSATISFIED;
                 }
-            } else {
+            } else {                                                    //if empty set space to NA
                 stateMap[r][c] = State.NA;
             }
 
         }
 
-        void getStateMap(double threshold) {
+        void getStateMap(double threshold) {                            //gets||produces the stateMap
             boolean satisfied;
 
             for(int r = 0; r < world.agentMap.length; r++)
-                for(int c = 0; c < world.agentMap[0].length; c++) {
+                for(int c = 0; c < world.agentMap[0].length; c++) {     //loops through agentMap
                     satisfied = isSatisfied(threshold, world.checkAdjacent(r, c), world.agentMap[r][c]);
-                    assignState(satisfied, r, c);
+                    assignState(satisfied, r, c);                       //assigns correct state
                 }
         }
 
-        void deployStates(double threshold) {
-            getStateMap(threshold);
-            Actor[][] virtualAgentMap = agentMap;
+        void deployStates(double threshold) {                           //reallocates & updates the table based on state
+            getStateMap(threshold);                                     //gets map based on threshold
+            Actor[][] virtualAgentMap = agentMap;                       //creates placeholder map
 
-            for(int r = 0; r < agentMap.length; r++)
-                for(int c = 0; c < agentMap[0].length; c++){
+            for(int r = 0; r < stateMap.length; r++)                    //loops through stateMap
+                for(int c = 0; c < stateMap[0].length; c++){
                     if (stateMap[r][c] == State.UNSATISFIED){
-                        reallocate(virtualAgentMap, r, c);
+                        reallocate(virtualAgentMap, r, c);              //reallocates agent if not satisfied
                     }
                 }
-            agentMap = virtualAgentMap;
+            agentMap = virtualAgentMap;                                 //upd displayed table with corrected placeholder
         }
 
-        int[] checkAdjacent(int row, int col) {
-            int[] found = {0, 0};
-
-            for (int r = 0; r < agentMap.length; r++)
+        int[] checkAdjacent(int row, int col) {                         //check neighbours to given place in matrix
+            int[] found = {0, 0};                                       //index 0 is found red, index 1 is found blues
+            int adjDist = 1;
+            
+            for (int r = 0; r < agentMap.length; r++)                   //loops through agentMap
                 for (int c = 0; c < agentMap[0].length; c++) {
-                    boolean check = ((abs(r - row) == 1) && (abs(c - col) <= 1)) ||
-                            (abs(c - col) == 1 && (abs(r - row) <= 1));
+                    boolean check = ((abs(r - row) == adjDist) && (abs(c - col) <= adjDist)) || //checks if the absolute value of
+                            (abs(c - col) == adjDist && (abs(r - row) <= adjDist));             //the distance is 1 in either r/c
 
-                    if (check) {
+                    if (check) {                                        //if true then upd according agent
                         switch (agentMap[r][c]) {
                             case RED -> found[0]++;
                             case BLUE -> found[1]++;
                         }
                     }
                 }
-            return found;
+            return found;                                               //return found agents
         }
     }
 
