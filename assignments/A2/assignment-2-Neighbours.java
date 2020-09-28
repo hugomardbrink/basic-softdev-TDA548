@@ -1,3 +1,4 @@
+
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.scene.Group;
@@ -6,10 +7,7 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
-
-import java.util.Arrays;
 import java.util.Random;
-
 import static java.lang.Math.*;
 import static java.lang.System.*;
 
@@ -24,87 +22,55 @@ import static java.lang.System.*;
  *
  */
 // Extends Application because of JavaFX (just accept for now)
+
 public class Neighbours extends Application {
+    enum Actor {BLUE, RED, NONE}
+    enum State {SATISFIED, UNSATISFIED, NA}
 
-
-    enum Actor {
-        BLUE, RED, NONE
-    }
-
-    Actor[][] world;
+    World world;
 
     @Override
     public void init() {
         double[] dist = {0.25, 0.25, 0.50};
         int nLocations = 900;
 
-        world = setSize(nLocations);
-        createWorld(world, dist, nLocations);
+        world = new World(dist, nLocations);
 
         fixScreenSize(nLocations);
     }
 
-
     void updateWorld() {
-        final double threshold = 0.6;
-        boolean satisfied;
+        double threshold = 0.4;
+        world.deployStates(threshold);
 
-        for(int r = 0; r < world.length; r++)
-            for(int c = 0; c < world[0].length; c++) {
-                satisfied = isSatisfied(threshold, checkAdjacent(world, r, c), world[r][c]);
-                if(!satisfied && (world[r][c] != Actor.NONE)) {
-                    reallocate(world, r, c);
-                }
-            }
     }
 
     //---------------- Methods ----------------------------
 
-    Actor[][] setSize(int locations) {
-        int vectorSize = (int) sqrt(locations);
-        return new Actor[vectorSize][vectorSize];
+    int getFraction(double dist, int size) {
+        return ((int) (dist * size));
     }
 
-    void createWorld(Actor[][] matrix, double[] dist, int size) {
-        int red = getFraction(dist[0], size),
-                blue = getFraction(dist[1], size);
-
-        declareDist(matrix, red, blue);
-        shuffle(matrix);
-
+    double getAdjacentRelation(int states, int totalStates){
+        return ((double) states / (double) totalStates);
     }
 
-    void declareDist(Actor[][] matrix, int red, int blue) {
-        for (int r = 0; r < matrix.length; r++)
-            for (int c = 0; c < matrix[0].length; c++) {
-                if (red > 0) {
-                    matrix[r][c] = Actor.RED;
-                    red--;
-                } else if (blue > 0) {
-                    matrix[r][c] = Actor.BLUE;
-                    blue--;
-                } else {
-                    matrix[r][c] = Actor.NONE;
-                }
-            }
+    int getAgentSum (int[] array) {
+        return array[0] + array[1];
     }
 
-    void shuffle(Actor[][] matrix) {
-        Random rand = new Random();
-        Actor temp;
-        int randRow,
-                randCol;
+    boolean isSatisfied(double roof, int[] found, Actor state) {
+        double sameAdjacent;
+        int stateSum = getAgentSum(found);
 
 
-        for (int r = 0; r < matrix.length; r++)
-            for (int c = 0; c < matrix[0].length; c++) {
-                randRow = rand.nextInt(matrix.length);
-                randCol = rand.nextInt(matrix[0].length);
+        sameAdjacent = switch (state) {
+            case RED -> getAdjacentRelation(found[0], stateSum);
+            case BLUE -> getAdjacentRelation(found[1], stateSum);
+            default -> 0.0;
+        };
 
-                temp = matrix[r][c];
-                matrix[r][c] = matrix[randCol][randRow];
-                matrix[randCol][randRow] = temp;
-            }
+        return sameAdjacent >= roof;
     }
 
     void reallocate(Actor[][] matrix, int row, int col){
@@ -121,70 +87,109 @@ public class Neighbours extends Application {
         }
     }
 
-    int getFraction(double dist, int size) {
-        return ((int) (dist * size));
-    }
+    class World {
+        Actor[][] agentMap;
+        State[][] stateMap;
 
-    double getAdjacentRelation(int states, int totalStates){
-        return ((double) states / (double) totalStates);
-    }
+        World (double[] dist, int size) {
+            int red = getFraction(dist[0], size),
+                blue = getFraction(dist[1], size),
+                vectorSize = (int) sqrt(size);
 
-    int getSum (int[] array) {
-        int sum = 0;
+            agentMap = new Actor[vectorSize][vectorSize];
+            stateMap = new State[vectorSize][vectorSize];
 
-        for (int i : array) {
-            sum += i;
+            declareDist(red, blue);
+            shuffle();
         }
-        return sum;
-    }
 
-    int[] checkAdjacent(Actor[][] matrix, int row, int col) {
-        int[] found = {0, 0, 0};
-
-
-        for (int r = 0; r < matrix.length; r++)
-            for (int c = 0; c < matrix[0].length; c++) {
-                boolean check = ((abs(r - row) == 1) && (abs(c - col) <= 1)) ||
-                                (abs(c - col) == 1 && (abs(r - row) <= 1));
-
-                if (check) {
-                    switch (matrix[r][c]) {
-                        case RED:
-                            found[0]++;
-                            break;
-                        case BLUE:
-                            found[1]++;
-                            break;
-                        default:
-                            found[2]++;
-                            break;
+        void declareDist(int red, int blue) {
+            for (int r = 0; r < agentMap.length; r++)
+                for (int c = 0; c < agentMap[0].length; c++) {
+                    if (red > 0) {
+                        agentMap[r][c] = Actor.RED;
+                        red--;
+                    } else if (blue > 0) {
+                        agentMap[r][c] = Actor.BLUE;
+                        blue--;
+                    } else {
+                        agentMap[r][c] = Actor.NONE;
                     }
                 }
-            }
-        return found;
-    }
-
-    boolean isSatisfied(double roof, int[] found, Actor state) {
-        double sameAdjacent;
-        int stateSum = getSum(found);
-
-
-        switch(state){
-            case RED:
-                sameAdjacent = getAdjacentRelation(found[0], stateSum);
-                break;
-            case BLUE:
-                sameAdjacent = getAdjacentRelation(found[1], stateSum);
-                break;
-            default:
-                sameAdjacent = getAdjacentRelation(found[2], stateSum);
-                break;
         }
 
-        return sameAdjacent >= roof;
+        void shuffle() {
+            Random rand = new Random();
+            Actor temp;
+            int randRow,
+                randCol;
+
+
+            for (int r = 0; r < agentMap.length; r++)
+                for (int c = 0; c < agentMap[0].length; c++) {
+                    randRow = rand.nextInt(agentMap.length);
+                    randCol = rand.nextInt(agentMap[0].length);
+
+                    temp = agentMap[r][c];
+                    agentMap[r][c] = agentMap[randCol][randRow];
+                    agentMap[randCol][randRow] = temp;
+                }
+        }
+
+        void assignState(boolean satisfied, int r, int c) {
+            if (agentMap[r][c] != Actor.NONE) {
+                if (satisfied) {
+                    stateMap[r][c] = State.SATISFIED;
+                } else {
+                    stateMap[r][c] = State.UNSATISFIED;
+                }
+            } else {
+                stateMap[r][c] = State.NA;
+            }
+
+        }
+
+        void getStateMap(double threshold) {
+            boolean satisfied;
+
+            for(int r = 0; r < world.agentMap.length; r++)
+                for(int c = 0; c < world.agentMap[0].length; c++) {
+                    satisfied = isSatisfied(threshold, world.checkAdjacent(r, c), world.agentMap[r][c]);
+                    assignState(satisfied, r, c);
+                }
+        }
+
+        void deployStates(double threshold) {
+            getStateMap(threshold);
+            Actor[][] virtualAgentMap = agentMap;
+
+            for(int r = 0; r < agentMap.length; r++)
+                for(int c = 0; c < agentMap[0].length; c++){
+                    if (stateMap[r][c] == State.UNSATISFIED){
+                        reallocate(virtualAgentMap, r, c);
+                    }
+                }
+            agentMap = virtualAgentMap;
+        }
+
+        int[] checkAdjacent(int row, int col) {
+            int[] found = {0, 0};
+
+            for (int r = 0; r < agentMap.length; r++)
+                for (int c = 0; c < agentMap[0].length; c++) {
+                    boolean check = ((abs(r - row) == 1) && (abs(c - col) <= 1)) ||
+                            (abs(c - col) == 1 && (abs(r - row) <= 1));
+
+                    if (check) {
+                        switch (agentMap[r][c]) {
+                            case RED -> found[0]++;
+                            case BLUE -> found[1]++;
+                        }
+                    }
+                }
+            return found;
+        }
     }
-
-
 
 
 
@@ -199,7 +204,7 @@ public class Neighbours extends Application {
     final double margin = 50;
 
     void fixScreenSize(int nLocations) {
-                                                                                        // Adjust screen window depending on nLocations
+        // Adjust screen window depending on nLocations
         dotSize = (width - 2 * margin) / sqrt(nLocations);
         if (dotSize < 1) {
             dotSize = 2;
@@ -209,20 +214,20 @@ public class Neighbours extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
 
-                                                                                        // Build a scene graph
+        // Build a scene graph
         Group root = new Group();
         Canvas canvas = new Canvas(width, height);
         root.getChildren().addAll(canvas);
         GraphicsContext gc = canvas.getGraphicsContext2D();
 
-                                                                                        // Create a timer
+        // Create a timer
         AnimationTimer timer = new AnimationTimer() {
             // This method called by FX, parameter is the current time
             public void handle(long currentNanoTime) {
                 long elapsedNanos = currentNanoTime - previousTime;
                 if (elapsedNanos > interval) {
                     updateWorld();
-                    renderWorld(gc, world);
+                    renderWorld(gc, world.agentMap);
                     previousTime = currentNanoTime;
                 }
             }
@@ -235,7 +240,7 @@ public class Neighbours extends Application {
 
         timer.start();  // Start simulation
     }
-                                                                                        // Render the state of the world to the screen
+    // Render the state of the world to the screen
     public void renderWorld(GraphicsContext g, Actor[][] world) {
         g.clearRect(0, 0, width, height);
         int size = world.length;
