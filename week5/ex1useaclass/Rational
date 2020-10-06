@@ -1,0 +1,137 @@
+package exercises.ex1useaclass;
+
+import samples.useaclass.Complex;
+
+import java.util.Objects;
+
+import static java.lang.Math.abs;
+
+/*
+ *    A class representing a rational number
+ *
+ *    NOTE: No IO here, this is just the logical concept.
+ *
+ *    Test the class by running Ex1TestRational.
+ *
+ * See:
+ * - useaclass/
+ * - UseAMap
+ */
+
+public class Rational {
+
+    private final int num;    // rational =  num / denom
+    private final int denom;
+
+    Rational(int num) {
+        this.num = num;
+        this.denom = 1;
+    }
+
+    Rational(int num, int denom) {
+        int divider = GCD(num, denom);
+
+        if ((num < 0 && denom > 0) || (num > 0 && denom < 0))
+            divider *= -1;
+
+
+        this.num = (num/divider);
+        this.denom = denom/divider;
+
+
+    }
+
+    Rational(Rational o) {
+        this.num = o.num;
+        this.denom = o .denom;
+    }
+
+    public int getDenom() {
+        return denom;
+    }
+
+    public int getNum() {
+        return num;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(num, denom);
+    }
+
+    @Override    // @Override shows that we wish to implement our own version (checked by compilers).
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        Rational rational = (Rational) o;
+
+        return (rational.num == num) &&
+                (rational.denom == denom);
+
+    }
+
+    int GCD (int a,int b) {
+        if (b==0) return a;
+        return GCD(b,a%b);
+    }
+
+    double sameDem(int denom) {
+        return (double) this.denom/ (double) denom;
+    }
+
+    public Rational add(Rational o) {
+        double mul = sameDem(o.denom);
+        int newNum = this.num + (int) (o.num * mul);
+
+        return new Rational(newNum, this.denom);
+    }
+
+    public Rational sub(Rational o) {
+        double mul = sameDem(o.denom);
+        int newNum = this.num - (int) (o.num * mul);
+
+        return new Rational(newNum, this.denom);
+    }
+
+    public Rational mul(Rational o) {
+        int newDenom = this.denom * o.denom;
+
+        return new Rational(this.num, newDenom);
+    }
+
+    public Rational div(Rational o) {
+        int newDenom = this.denom / o.denom;
+
+        return new Rational(this.num, newDenom);
+    }
+
+    public boolean lessThan(Rational o) {
+        double mul = sameDem(o.denom);
+        int newNum = this.num + (int) (o.num / mul);
+
+        return newNum < this.num;
+
+    }
+
+    public double toDouble() {
+        return (double) this.num / (double) this.denom;
+    }
+
+    public String toString() {
+        StringBuilder s = new StringBuilder();
+
+        s.append(this.num);
+        s.append(" / ");
+        s.append(this.denom);
+
+        return s.toString();
+    }
+
+    // TODO
+
+}
+
