@@ -47,7 +47,7 @@ public class Ex1WordCount {
                 size++;
             }
         }
-    return size;
+        return size;
     }
 
     char[] stringToChar(String text) {
