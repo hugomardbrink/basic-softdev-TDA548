@@ -22,23 +22,18 @@ class Calculator {
     final static String MISSING_OPERAND = "Missing or bad operand";
     final static String DIV_BY_ZERO = "Division with 0";
     final static String MISSING_OPERATOR = "Missing operator or parenthesis";
-    final static String OP_NOT_FOUND = "Operator not found";
+    final static String OP_NOT_FOUND = "Operator/Operand not found";
 
     // Definition of operators
     final static String OPERATORS = "+-*/^";
 
     // Method used in REPL
     double eval(String expr) {                           //evaluate input
-        if (expr.length() == 0) {                        //if nothing is inputed display NaN
+        if (expr.length() == 0)                            //if nothing is typed display NaN
             return NaN;
-        }
 
         List<String> tokens = tokenize(expr);           //tokenize string
-        if(tokens == null)                              //if the input is illegal
-            return NaN;                                 //display NaN
-
         List<String> postfix = infix2Postfix(tokens);   //infix -> postfix
-
         return evalPostfix(postfix);                    //calculate postfix
     }
 
@@ -46,20 +41,22 @@ class Calculator {
 
     public double evalPostfix(List<String> postfix) {   //evaluate postfix
         Deque<Double> stack = new ArrayDeque<>();       //initiate stack
-        char token;                                     //declare token char
 
-        for(String s : postfix) {                       //for all tokens in postfix
-            token = s.charAt(0);                        //format string to char
-
-            if(Character.isDigit(token))               //if token is a number push to stack
-                stack.push(toDouble(s));               //format s into double
-            else
-                stack.push(applyOperator(Character.toString(token), //use operator in stack with the last 2 numbers in the stack
-                          toDouble(stack.pop().toString()),
-                          toDouble(stack.pop().toString())));
+        for(String token : postfix) {                       //for all tokens in postfix
+            if(Character.isDigit(token.charAt(0)))               //if token is a number push to stack
+                stack.push(Double.parseDouble(token));               //format token into double
+            else  {
+                if (stack.size() >= 2)
+                    stack.push(applyOperator(token, stack.pop(), stack.pop()));  //use operator in stack with the last 2 numbers in the stack
+                else
+                    throw new IllegalArgumentException(MISSING_OPERAND);          //if stack size is less than 2 then excess operator
+            }
         }
 
-        return stack.pop();                                         //return final calculation
+        if (stack.size() == 1)
+            return (stack.pop());
+        else    // if stack size does not equal 1 it means that there are more than 1 number on the stack (or 0) and that would mean that there is a missing operator
+            throw new IllegalArgumentException(MISSING_OPERATOR);
     }
 
     double applyOperator(String op, double d1, double d2) {
@@ -72,7 +69,7 @@ class Calculator {
                 return d1 * d2;
             case "/":                                              //do division
                 if (d1 == 0) {                                     //if divided by 0 return NaN
-                    return NaN;
+                    throw new IllegalArgumentException(DIV_BY_ZERO);
                 }
                 return d2 / d1;
             case "^":                                              //do power of
@@ -85,61 +82,70 @@ class Calculator {
 
     public List<String> infix2Postfix(List<String> tokens) {    //turns infix into postfix
         List<String> postFix = new ArrayList<>();               //initiate lists and variables
-        Deque<Character> stack = new ArrayDeque<>();
-        char ch;
+        Deque<String> stack = new ArrayDeque<>();
 
-
-        for(String s : tokens) {                                //for all tokens in loop
-            ch = s.charAt(0);
-
-            if (Character.isDigit(ch))                          //if digit
-                postFix.add(s);                                 //add to postfix
-            else
-                manageStack(ch, stack, postFix);                //if not digit manage stack
+        for (String token : tokens) {                           //for each token
+           if (Character.isDigit(token.charAt(0)))              //if digit add to postfix
+               postFix.add(token);
+           else if (isOperator(token.charAt(0)))                //if operator do according managing
+                manageOperator(token, stack, postFix);
+           else if (token.equals("("))                          //if left par then push to stack
+               stack.push(token);
+           else if (token.equals(")"))                          //if right par do according managing
+                manageRightPar(stack, postFix);
         }
 
-        popUntilStop(stack, postFix);                           //when all tokens read pop all operators
+        popOperators(stack, postFix);
+
+        if(!stack.isEmpty()) //if not empty then left par left in stack, error
+            throw new IllegalArgumentException(MISSING_OPERATOR);
 
         return postFix;                                         //return postfix
     }
 
-    void manageStack(char token, Deque<Character> stack, List<String> postFix) {   //manages stack if token is not num
-        switch (token) {
-            case ')':                                                             //if token is left par pop until par
-                popUntilStop(stack, postFix);
-                return;
-            case '(':                                                             //if start par push it
-                stack.push(token);
-                return;
-            case '^':                                                            //if operator manage with precedence
-            case '*':
-            case '/':
-            case '+':
-            case '-':
-                manageWithPrecedence(token, stack, postFix);
-                return;
-            default:                                                            //if somehow illegal crash program
-                throw new RuntimeException(MISSING_OPERATOR);
+    void manageOperator(String token, Deque<String> stack, List<String> postFix) {
+
+        while (!stack.isEmpty() &&                                              //while the stack is not empty
+              (!stack.peek().equals("(")) &&                                    //and top stack is not left par
+              ((getPrecedence(stack.peek()) > getPrecedence(token)) ||          //and if top stack precedence is greater than tokens
+                      (getPrecedence(stack.peek()) == getPrecedence(token) &&       //or top stack and token have same precedence
+                              getAssociativity(token) == Assoc.LEFT))) {            //and tokens associativity is left
+
+            postFix.add(stack.pop());                                      //pop operator
+        }
+        stack.push(token);                                                          //push token regardless
+    }
+
+    void manageRightPar(Deque<String> stack, List<String> postFix) {                //manage right parenthesis
+        while(!stack.isEmpty() && !stack.peek().equals("(")) {                      //while stack is not empty and not left par
+            postFix.add(stack.pop());                                               //pop stack and add to postfix
+        }
+
+        if (!stack.isEmpty() && stack.peek().equals("("))                           //if next stack equals left then pop it
+            stack.pop();
+        else                                                                        //if not = unbalanced parenthesis
+            throw new IllegalArgumentException(MISSING_OPERATOR);
+    }
+
+    Assoc getAssociativity(String op) {             //gets associativity
+        if ("+-*/".contains(op)) {
+            return Assoc.LEFT;
+        } else if ("^".contains(op)) {
+            return Assoc.RIGHT;
+        } else {
+            throw new RuntimeException(OP_NOT_FOUND);
         }
     }
 
-    void manageWithPrecedence(char token, Deque<Character> stack, List<String> postFix) {  //manages with precedence
-
-                        //if stack is empty or the value on top of the stack is greater or equal to token then pop until
-                        //either parenthesis or stacks end
-            if (stack.isEmpty() || getPrecedence(stack.peekLast().toString()) >= getPrecedence(Character.toString(token)))
-                popUntilStop(stack, postFix);
-
-            stack.push(token);         //push token
+    enum Assoc {            //declare assoc enum
+        LEFT,
+        RIGHT
     }
 
-    void popUntilStop(Deque<Character> stack, List<String> postFix) {
-        for (char token : stack)                                               //for all tokens in stack
-            if (token != '(') {                                                //if not parenthesis then pop and add
-                postFix.add(stack.pop().toString());
-            } else if (!stack.isEmpty()) {                                     //if stack is not empty then pop
-                stack.pop();
-                return;
+    void popOperators(Deque<String> stack, List<String> postFix) {               //pops all operators
+        for (String token : stack)                                               //for all tokens in stack
+            if (isOperator(token.charAt(0))) {                                   //if operator pop it and add to postfix
+                postFix.add(stack.pop());
             }
     }
 
@@ -155,99 +161,33 @@ class Calculator {
         }
     }
 
-    double toDouble(String op) {                                            //turns string into double
-        return Double.parseDouble(op);
+    boolean isOperator(char token) {                                    //returns true if token is a operator
+        return OPERATORS.contains(Character.toString(token));           //if operator contains the token return true
     }
 
     // ---------- Tokenize -----------------------
 
-    public List<String> tokenize(String expr) {                         //turn infix into tokens
+    public List<String> tokenize(String expr) {
         List<String> tokens = new ArrayList<>();
+        int upperBound;
 
-        expr = expr.replaceAll(" ", "");                //remove spaces
-
-        for(char token : expr.toCharArray())
-            tokens.add(Character.toString(token));                      //for each token add it to list
-
-        if (!checkValidity(expr))                                       //if not legal expression then return null
-            return null;
-
-        return tokens;                                                  //if legal return infix tokenized
-    }
-
-    boolean checkValidity(String expr) {                                //checks if expression is legal
-
-        for(char token : expr.toCharArray())                            //for each token check if token is valid
-            if(!validCharacter(token))
-                return false;
-                                    //return true if it contains numbers, has legal parenthesis and is in a valid order
-        return validOrder(expr) && checkParentheses(expr) && containNumbers(expr);
-    }
-
-    boolean checkParentheses(String expr) {             //checks parenthesis
-        Deque<Character> stack = new ArrayDeque<>();
-
-        for(char token : expr.toCharArray()) {          //for each token
-            if (token == '(') {                         //if start push it
-                stack.push(token);
-            } else if (token == ')') {                  //if end try to pop and if success return true
-                try {
-                    stack.pop();
-                } catch (Exception e) {                //if fail then unbalanced
-                    return false;
-                }
-            }
+        for (int i = 0; i < expr.length(); i++) {
+            if (Character.isDigit(expr.charAt(i))) {        // special case for the token digit, point is to see if there are digits after the first digit for it to form a number
+                upperBound = getNumUpperBound(i, expr);        // returns the position of the last digit in the number
+                tokens.add(expr.substring(i, upperBound+1));      // adds the substring made of digits formed as a number to the list of tokens
+                i = upperBound;                                   // jumps to index after number
+            } else if ("+-*/^()".contains(Character.toString(expr.charAt(i))))      //checks if valid token
+                tokens.add(Character.toString(expr.charAt(i)));   //add to tokenList
+            else if (expr.charAt(i) != ' ')                         //if not space, num or valid token throw exception
+                throw new IllegalArgumentException(OP_NOT_FOUND);
         }
-        return stack.size() == 0;                       //if ( is still left then unbalanced
+        return tokens;                                              //return tokenList
     }
 
-    boolean containNumbers(String expr) {              //if expression have number(s) return true
-        for(char token : expr.toCharArray())
-            if(Character.isDigit(token))
-                return true;
+    int getNumUpperBound(int i, String expr) {                      //gets the end index of the number in the expression
+        while (i+1 < expr.length() && Character.isDigit(expr.charAt(i+1))) //while inbounds and the next token is a number
+            i++;                                                           //increment index
 
-        return false;
-    }
-
-    boolean validCharacter(char token) {               //if is a operator a parenthesis or digit then return true
-        return  isOperator(token) ||
-                Character.isDigit(token) ||
-                token == '(' || token == ')';
-    }
-
-    boolean validOrder(String expr) {                               //checks order of expression
-        boolean inBounds, startPar, endPar;
-        char [] exprCh = expr.toCharArray();
-
-        for (int i = 0; i < exprCh.length-1; i++) {
-            inBounds = i != 0 && i != exprCh.length - 1;
-
-            //  "(" must have a operator behind it and must have a number after, can not have opposite parenthesis adj.
-            //  ")" must have a operator after it and a number behind it, can not have opposite parenthesis adjacent
-            startPar = inBounds &&
-                    (!Character.isDigit(exprCh[i - 1]) && exprCh[i-1] != ')'
-                    || Character.isDigit(exprCh[i+1]) && exprCh[i+1] != ')');
-            endPar = inBounds &&
-                    (Character.isDigit(exprCh[i - 1]) && exprCh[i-1] != '('
-                    || (!Character.isDigit(exprCh[i+1])) && exprCh [i+1] != '(');
-
-
-            if (isOperator(exprCh[i]) && isOperator(exprCh[i + 1]))     //if 2 operators are adjacent the error
-                return false;
-            else if (exprCh[i] == '(' && startPar)                      //checks both parenthesis
-                return false;
-            else if (exprCh[i] == ')' && endPar)
-                return false;
-        }
-
-        return true;                                                    //return true if all checks out
-    }
-
-    boolean isOperator(char token) {                                    //returns true if token is a operator
-        for (char ch : OPERATORS.toCharArray())
-            if(token == ch)
-                return true;
-
-        return false;
+        return i;                                                           //return endIndex for number
     }
 }
