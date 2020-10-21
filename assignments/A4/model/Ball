@@ -1,0 +1,55 @@
+package pong.model;
+
+import pong.event.ModelEvent;
+import pong.event.EventBus;
+import java.util.Random;
+
+import static pong.model.Pong.GAME_HEIGHT;
+import static pong.model.Pong.GAME_WIDTH;
+
+/*
+ * A Ball for the Pong game
+ * A model class
+ */
+public class Ball extends movableObject {
+    public static final double BALL_WIDTH = 40;
+    public static final double BALL_HEIGHT = 40;
+    public static final double BALL_SPEED = 5;
+    public static final double BALL_SPEED_FACTOR = 1.02;
+    public static final double BALL_X_SPAWN = GAME_WIDTH/2;
+    public static final double BALL_Y_SPAWN = GAME_HEIGHT/2;
+
+
+    public Ball() {
+        super(BALL_X_SPAWN, BALL_Y_SPAWN, BALL_WIDTH, BALL_HEIGHT, BALL_SPEED);
+        this.angle = getRandomAngle();
+        setRandomDirection();
+    }
+
+    private void paddleBounce() {
+        reverseSpeed();
+        reverseAngle();
+        speed *= BALL_SPEED_FACTOR;
+        EventBus.INSTANCE.publish(new ModelEvent(ModelEvent.Type.BALL_HIT_PADDLE));
+    }
+
+    private void borderBounce() {
+        reverseAngle();
+        EventBus.INSTANCE.publish(new ModelEvent(ModelEvent.Type.BALL_HIT_WALL_CEILING));
+    }
+
+    public boolean managePaddleCollision (Paddle leftPaddle, Paddle rightPaddle) {
+        if (this.hitboxCollision(leftPaddle) || this.hitboxCollision(rightPaddle)) {
+            this.paddleBounce();
+            return true;
+        }
+
+        return false;
+    }
+
+    public void manageBorderCollision(staticObject ceiling, staticObject floor) {
+        if (this.hitboxCollision(ceiling) || this.hitboxCollision(floor))
+            this.borderBounce();
+    }
+}
+
