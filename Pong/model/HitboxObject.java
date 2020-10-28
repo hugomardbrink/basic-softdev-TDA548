@@ -3,7 +3,7 @@ package pong.model;
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 
-public abstract class hitboxObject implements IPositionable {
+public abstract class HitboxObject implements IPositionable {
     public final double WIDTH;
     public final double HEIGHT;
     private Rectangle2D.Double hitBox;
@@ -24,7 +24,7 @@ public abstract class hitboxObject implements IPositionable {
     }
 
     boolean hitboxCollision(Object o) {
-        hitboxObject body = (hitboxObject) o;
+        HitboxObject body = (HitboxObject) o;
 
         body.setCollisionHitbox();
         this.setCollisionHitbox();
