@@ -2,7 +2,7 @@ package pong.model;
 
 import java.util.Random;
 
-public abstract class MovableObject extends hitboxObject {
+public abstract class MovableObject extends HitboxObject {
     public double xPos;
     public double yPos;
     public double speed;
